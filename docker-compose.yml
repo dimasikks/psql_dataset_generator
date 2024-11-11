@@ -1,0 +1,40 @@
+version: "3"
+services:
+  postgres:
+    image: postgres:14.7-alpine
+    environment:
+     POSTGRES_USER: postgres
+     POSTGRES_PASSWORD: postgres
+     POSTGRES_PORT: 5432
+     POSTGRES_DB: homework
+    healthcheck:
+     test: ["CMD-SHELL", "pg_isready -U postgres"]
+     interval: 10s
+     timeout: 5s
+     retries: 3
+    volumes:
+     - ./data:/var/lib/postgresql/data
+    ports:
+     - "5433:5432"
+    networks:
+     - network
+     
+  dataset_generator:
+    build:
+      context: ./dataset-generator
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_HOST: postgres
+    networks:
+     - network
+    depends_on: 
+     postgres:
+      condition: service_healthy
+  
+volumes:
+ data:
+
+networks:
+ network:
+  driver: bridge
+ 
